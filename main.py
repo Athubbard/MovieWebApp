@@ -14,14 +14,14 @@ db = SQLAlchemy(app)
 class ListUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    pw_hash = db.Column(db.String(120)) 
+    
 
     def __init__(self, email, password):
         self.email = email
-        self.password = password
+        self.pw_hash = make_pw_hash(password)
 
-   # def __repr__(self):
-       # return '<ListUser %r>' % self.email
+
 
 
 #class that wold hold the names of the movies and possibly the plot via the csv file?
@@ -36,9 +36,6 @@ class Movie(db.Model):
         
     
 
-    #def __repr__(self):
-        #return '<Movie %r>' % self.name
-
 
 
 @app.route("/signup", methods=['GET', 'POST'])
@@ -49,8 +46,8 @@ def signup():
         if not is_email(email):
             flash(email + '"Not a email address"')
             return redirect('/signup')
-        # TODO 1: validate that form value of 'verify' matches password
-        # TODO 2: validate that there is no user with that email already
+        # 'verify' matches password
+        # validate that there is no user with that email already
         listuser = ListUser(email=email, password=password)
         db.session.add(listuser)
         db.session.commit()
@@ -101,15 +98,6 @@ def add_movie():
 def movie_list():
     movies = Movie.query.all()
 
-    #if request.args:
-        #movie_id = request.args.get('id')
-        #movie = Movie.query.get(movie_id)
-
-        #return render_template('singleblogpost.html', blog=blog)
-
-    #else:
-    #movies = movie.query.all()
-
     return render_template('movielist.html', title="Movie List", movies=movies)
 
 
@@ -119,11 +107,11 @@ def movie_list():
 #Allows list user to delete movie
 
 @app.route('/delete', methods=['POST'])
-def delete_task():
+def delete_movie():
+    delete_movie= movie
 
     movie_id = int(request.form['movie-id'])
     movie = Movie.query.get(movie_id)
-    #movie.completed = True
     db.session.add(movie)
     db.session.commit()
 
